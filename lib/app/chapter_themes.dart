@@ -1,0 +1,606 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+/// Chapter-specific visual identity: color palette, font, pattern, shape.
+class ChapterTheme {
+  final String name;
+  final String description;
+  final Color background;
+  final Color backgroundAccent;
+  final List<Color> backgroundGradient;
+  final Color cardBackground;
+  final Color cardBorder;
+  final Color primary;
+  final Color accent;
+  final Color success;
+  final Color warning;
+  final Color error;
+  final Color textPrimary;
+  final Color textMuted;
+  final String fontFamily;
+  final ChapterPattern pattern;
+  final ChapterShape shape;
+  final double cardElevation;
+  final double borderRadius;
+  final String gridPattern;
+  final String trackAsset;
+
+  const ChapterTheme({
+    required this.name,
+    required this.description,
+    required this.background,
+    required this.backgroundAccent,
+    required this.backgroundGradient,
+    required this.cardBackground,
+    required this.cardBorder,
+    required this.primary,
+    required this.accent,
+    required this.success,
+    required this.warning,
+    required this.error,
+    required this.textPrimary,
+    required this.textMuted,
+    required this.fontFamily,
+    required this.pattern,
+    required this.shape,
+    required this.cardElevation,
+    required this.borderRadius,
+    required this.gridPattern,
+    required this.trackAsset,
+  });
+
+  TextStyle get titleStyle => TextStyle(
+    fontFamily: fontFamily,
+    fontWeight: FontWeight.w900,
+    color: textPrimary,
+    letterSpacing: 1.5,
+  );
+}
+
+enum ChapterPattern {
+  dots,
+  grid,
+  diagonal,
+  waves,
+  stripes,
+  honeycomb,
+  zigzag,
+  sparkles,
+  bubbles,
+  triangles,
+}
+
+enum ChapterShape {
+  roundedSquare,
+  stadium,
+  smoothCard,
+  hex,
+  diamond,
+  sharpCorners,
+  soft,
+  beveled,
+}
+
+class ChapterThemes {
+  static const int totalThemes = 20;
+
+  static const Map<int, ChapterTheme> _all = {
+    1: ChapterTheme(
+      name: 'Neon Dawn',
+      description: 'Cyberpunk city vibes',
+      background: Color(0xFF0A0E27),
+      backgroundAccent: Color(0xFF1A1F44),
+      backgroundGradient: [Color(0xFF0A0E27), Color(0xFF271859)],
+      cardBackground: Color(0xFF1A1C36),
+      cardBorder: Color(0xFF6C5CE7),
+      primary: Color(0xFFA29BFE),
+      accent: Color(0xFF00F5D4),
+      success: Color(0xFF00F5A0),
+      warning: Color(0xFFFFD60A),
+      error: Color(0xFFF72585),
+      textPrimary: Colors.white,
+      textMuted: Color(0xFF94A3B8),
+      fontFamily: 'Orbitron',
+      pattern: ChapterPattern.grid,
+      shape: ChapterShape.roundedSquare,
+      cardElevation: 10,
+      borderRadius: 20,
+      gridPattern: 'neon',
+      trackAsset: 'assets/audio/track01.mp3',
+    ),
+    2: ChapterTheme(
+      name: 'Ocean Deep',
+      description: 'Underwater kingdom',
+      background: Color(0xFF052E3C),
+      backgroundAccent: Color(0xFF0A4E68),
+      backgroundGradient: [Color(0xFF052E3C), Color(0xFF0B6E8A)],
+      cardBackground: Color(0xFF0F3A4C),
+      cardBorder: Color(0xFF0EA5E9),
+      primary: Color(0xFF06B6D4),
+      accent: Color(0xFF22D3EE),
+      success: Color(0xFF34D399),
+      warning: Color(0xFFFBBF24),
+      error: Color(0xFFFB7185),
+      textPrimary: Color(0xFFECFEFF),
+      textMuted: Color(0xFF7DD3FC),
+      fontFamily: 'Inter',
+      pattern: ChapterPattern.waves,
+      shape: ChapterShape.stadium,
+      cardElevation: 6,
+      borderRadius: 28,
+      gridPattern: 'waves',
+      trackAsset: 'assets/audio/track02.mp3',
+    ),
+    3: ChapterTheme(
+      name: 'Sunset Valley',
+      description: 'Golden hour magic',
+      background: Color(0xFF2B0F15),
+      backgroundAccent: Color(0xFF581E2A),
+      backgroundGradient: [Color(0xFF2B0F15), Color(0xFF7C2D12)],
+      cardBackground: Color(0xFF3F1720),
+      cardBorder: Color(0xFFFB923C),
+      primary: Color(0xFFF97316),
+      accent: Color(0xFFFACC15),
+      success: Color(0xFF86EFAC),
+      warning: Color(0xFFFDE047),
+      error: Color(0xFFF43F5E),
+      textPrimary: Color(0xFFFFE4E6),
+      textMuted: Color(0xFFFDBA74),
+      fontFamily: 'Lobster',
+      pattern: ChapterPattern.stripes,
+      shape: ChapterShape.smoothCard,
+      cardElevation: 8,
+      borderRadius: 24,
+      gridPattern: 'sunset',
+      trackAsset: 'assets/audio/track03.mp3',
+    ),
+    4: ChapterTheme(
+      name: 'Forest Path',
+      description: 'Emerald sanctuary',
+      background: Color(0xFF0B2A1F),
+      backgroundAccent: Color(0xFF144B35),
+      backgroundGradient: [Color(0xFF0B2A1F), Color(0xFF1A6B4A)],
+      cardBackground: Color(0xFF123C2C),
+      cardBorder: Color(0xFF10B981),
+      primary: Color(0xFF10B981),
+      accent: Color(0xFF34D399),
+      success: Color(0xFF4ADE80),
+      warning: Color(0xFFFACC15),
+      error: Color(0xFFEF4444),
+      textPrimary: Color(0xFFECFDF5),
+      textMuted: Color(0xFF6EE7B7),
+      fontFamily: 'Quicksand',
+      pattern: ChapterPattern.honeycomb,
+      shape: ChapterShape.hex,
+      cardElevation: 5,
+      borderRadius: 22,
+      gridPattern: 'forest',
+      trackAsset: 'assets/audio/track04.mp3',
+    ),
+    5: ChapterTheme(
+      name: 'Arctic Frost',
+      description: 'Cool crystalline winter',
+      background: Color(0xFF0F2330),
+      backgroundAccent: Color(0xFF1C3B52),
+      backgroundGradient: [Color(0xFF0F2330), Color(0xFF2E5976)],
+      cardBackground: Color(0xFF183547),
+      cardBorder: Color(0xFF67E8F9),
+      primary: Color(0xFF22D3EE),
+      accent: Color(0xFFA5F3FC),
+      success: Color(0xFF67E8F9),
+      warning: Color(0xFFFDE68A),
+      error: Color(0xFFFDA4AF),
+      textPrimary: Color(0xFFF0FDFA),
+      textMuted: Color(0xFFA5F3FC),
+      fontFamily: 'Montserrat',
+      pattern: ChapterPattern.triangles,
+      shape: ChapterShape.soft,
+      cardElevation: 12,
+      borderRadius: 18,
+      gridPattern: 'frost',
+      trackAsset: 'assets/audio/track05.mp3',
+    ),
+    6: ChapterTheme(
+      name: 'Volcano Core',
+      description: 'Molten lava heat',
+      background: Color(0xFF220606),
+      backgroundAccent: Color(0xFF521212),
+      backgroundGradient: [Color(0xFF220606), Color(0xFF7C1D1D)],
+      cardBackground: Color(0xFF3B0E0E),
+      cardBorder: Color(0xFFEF4444),
+      primary: Color(0xFFDC2626),
+      accent: Color(0xFFF97316),
+      success: Color(0xFF84CC16),
+      warning: Color(0xFFF59E0B),
+      error: Color(0xFFF43F5E),
+      textPrimary: Color(0xFFFFE4E6),
+      textMuted: Color(0xFFFCA5A5),
+      fontFamily: 'BebasNeue',
+      pattern: ChapterPattern.triangles,
+      shape: ChapterShape.sharpCorners,
+      cardElevation: 16,
+      borderRadius: 10,
+      gridPattern: 'lava',
+      trackAsset: 'assets/audio/track06.mp3',
+    ),
+    7: ChapterTheme(
+      name: 'Cosmic Space',
+      description: 'Starlit galaxy drift',
+      background: Color(0xFF0B0525),
+      backgroundAccent: Color(0xFF1F1055),
+      backgroundGradient: [Color(0xFF0B0525), Color(0xFF3B1B93)],
+      cardBackground: Color(0xFF1A0E3D),
+      cardBorder: Color(0xFF8B5CF6),
+      primary: Color(0xFF8B5CF6),
+      accent: Color(0xFFF472B6),
+      success: Color(0xFF34D399),
+      warning: Color(0xFFFACC15),
+      error: Color(0xFFFB7185),
+      textPrimary: Color(0xFFF5F3FF),
+      textMuted: Color(0xFFC4B5FD),
+      fontFamily: 'Righteous',
+      pattern: ChapterPattern.sparkles,
+      shape: ChapterShape.beveled,
+      cardElevation: 14,
+      borderRadius: 26,
+      gridPattern: 'stars',
+      trackAsset: 'assets/audio/track07.mp3',
+    ),
+    8: ChapterTheme(
+      name: 'Candy Pop',
+      description: 'Sweet playful pastels',
+      background: Color(0xFF3B071B),
+      backgroundAccent: Color(0xFF6B1238),
+      backgroundGradient: [Color(0xFF3B071B), Color(0xFF9D174D)],
+      cardBackground: Color(0xFF4E0D28),
+      cardBorder: Color(0xFFF472B6),
+      primary: Color(0xFFEC4899),
+      accent: Color(0xFFF9A8D4),
+      success: Color(0xFF86EFAC),
+      warning: Color(0xFFFDE68A),
+      error: Color(0xFFFB7185),
+      textPrimary: Color(0xFFFDF2F8),
+      textMuted: Color(0xFFF9A8D4),
+      fontFamily: 'Pacifico',
+      pattern: ChapterPattern.bubbles,
+      shape: ChapterShape.roundedSquare,
+      cardElevation: 7,
+      borderRadius: 32,
+      gridPattern: 'candy',
+      trackAsset: 'assets/audio/track08.mp3',
+    ),
+    9: ChapterTheme(
+      name: 'Desert Dunes',
+      description: 'Sahara sandy horizon',
+      background: Color(0xFF2A1A07),
+      backgroundAccent: Color(0xFF5C3A10),
+      backgroundGradient: [Color(0xFF2A1A07), Color(0xFF9B6B1F)],
+      cardBackground: Color(0xFF3E260E),
+      cardBorder: Color(0xFFD97706),
+      primary: Color(0xFFF59E0B),
+      accent: Color(0xFFFCD34D),
+      success: Color(0xFFA3E635),
+      warning: Color(0xFFFACC15),
+      error: Color(0xFFDC2626),
+      textPrimary: Color(0xFFFFFBEB),
+      textMuted: Color(0xFFFCD34D),
+      fontFamily: 'PlayfairDisplay',
+      pattern: ChapterPattern.dots,
+      shape: ChapterShape.stadium,
+      cardElevation: 9,
+      borderRadius: 20,
+      gridPattern: 'sand',
+      trackAsset: 'assets/audio/track09.mp3',
+    ),
+    10: ChapterTheme(
+      name: 'Jungle Storm',
+      description: 'Thunderous tropics',
+      background: Color(0xFF061E12),
+      backgroundAccent: Color(0xFF0E3B22),
+      backgroundGradient: [Color(0xFF061E12), Color(0xFF1A5A35)],
+      cardBackground: Color(0xFF0F3220),
+      cardBorder: Color(0xFF22C55E),
+      primary: Color(0xFF16A34A),
+      accent: Color(0xFF4ADE80),
+      success: Color(0xFF86EFAC),
+      warning: Color(0xFFFACC15),
+      error: Color(0xFFEF4444),
+      textPrimary: Color(0xFFF0FDF4),
+      textMuted: Color(0xFF86EFAC),
+      fontFamily: 'RobotoSerif',
+      pattern: ChapterPattern.zigzag,
+      shape: ChapterShape.hex,
+      cardElevation: 11,
+      borderRadius: 16,
+      gridPattern: 'jungle',
+      trackAsset: 'assets/audio/track10.mp3',
+    ),
+    11: ChapterTheme(
+      name: 'Midnight Jazz',
+      description: 'Smooth navy lounge',
+      background: Color(0xFF0A1128),
+      backgroundAccent: Color(0xFF162547),
+      backgroundGradient: [Color(0xFF0A1128), Color(0xFF253C73)],
+      cardBackground: Color(0xFF142243),
+      cardBorder: Color(0xFF3B82F6),
+      primary: Color(0xFF3B82F6),
+      accent: Color(0xFF60A5FA),
+      success: Color(0xFF10B981),
+      warning: Color(0xFFFBBF24),
+      error: Color(0xFFF87171),
+      textPrimary: Color(0xFFEFF6FF),
+      textMuted: Color(0xFF93C5FD),
+      fontFamily: 'Lora',
+      pattern: ChapterPattern.dots,
+      shape: ChapterShape.smoothCard,
+      cardElevation: 6,
+      borderRadius: 28,
+      gridPattern: 'jazz',
+      trackAsset: 'assets/audio/track11.mp3',
+    ),
+    12: ChapterTheme(
+      name: 'Cherry Blossom',
+      description: 'Spring pink petals',
+      background: Color(0xFF2A0A1F),
+      backgroundAccent: Color(0xFF5E1443),
+      backgroundGradient: [Color(0xFF2A0A1F), Color(0xFF9D174D)],
+      cardBackground: Color(0xFF3E0F2E),
+      cardBorder: Color(0xFFF472B6),
+      primary: Color(0xFFEC4899),
+      accent: Color(0xFFFDA4AF),
+      success: Color(0xFF86EFAC),
+      warning: Color(0xFFFBCFE8),
+      error: Color(0xFFFB7185),
+      textPrimary: Color(0xFFFDF2F8),
+      textMuted: Color(0xFFFBCFE8),
+      fontFamily: 'DancingScript',
+      pattern: ChapterPattern.sparkles,
+      shape: ChapterShape.soft,
+      cardElevation: 8,
+      borderRadius: 30,
+      gridPattern: 'sakura',
+      trackAsset: 'assets/audio/track12.mp3',
+    ),
+    13: ChapterTheme(
+      name: 'Grape Haze',
+      description: 'Purple dream mist',
+      background: Color(0xFF1C0736),
+      backgroundAccent: Color(0xFF381266),
+      backgroundGradient: [Color(0xFF1C0736), Color(0xFF5B21B6)],
+      cardBackground: Color(0xFF2A0E50),
+      cardBorder: Color(0xFFA855F7),
+      primary: Color(0xFF8B5CF6),
+      accent: Color(0xFFC084FC),
+      success: Color(0xFF4ADE80),
+      warning: Color(0xFFFACC15),
+      error: Color(0xFFF43F5E),
+      textPrimary: Color(0xFFFAF5FF),
+      textMuted: Color(0xFFDDD6FE),
+      fontFamily: 'SpaceGrotesk',
+      pattern: ChapterPattern.waves,
+      shape: ChapterShape.beveled,
+      cardElevation: 10,
+      borderRadius: 22,
+      gridPattern: 'grape',
+      trackAsset: 'assets/audio/track13.mp3',
+    ),
+    14: ChapterTheme(
+      name: 'Mint Breeze',
+      description: 'Fresh cool greens',
+      background: Color(0xFF062524),
+      backgroundAccent: Color(0xFF104744),
+      backgroundGradient: [Color(0xFF062524), Color(0xFF1C7C78)],
+      cardBackground: Color(0xFF0E3836),
+      cardBorder: Color(0xFF2DD4BF),
+      primary: Color(0xFF14B8A6),
+      accent: Color(0xFF5EEAD4),
+      success: Color(0xFF34D399),
+      warning: Color(0xFFFDE68A),
+      error: Color(0xFFF87171),
+      textPrimary: Color(0xFFF0FDFA),
+      textMuted: Color(0xFF5EEAD4),
+      fontFamily: 'Poppins',
+      pattern: ChapterPattern.diagonal,
+      shape: ChapterShape.stadium,
+      cardElevation: 7,
+      borderRadius: 24,
+      gridPattern: 'mint',
+      trackAsset: 'assets/audio/track14.mp3',
+    ),
+    15: ChapterTheme(
+      name: 'Amber Horizon',
+      description: 'Deep bronze sunrise',
+      background: Color(0xFF251206),
+      backgroundAccent: Color(0xFF5A2C0F),
+      backgroundGradient: [Color(0xFF251206), Color(0xFF92400E)],
+      cardBackground: Color(0xFF3D1D0C),
+      cardBorder: Color(0xFFF59E0B),
+      primary: Color(0xFFD97706),
+      accent: Color(0xFFFBBF24),
+      success: Color(0xFF84CC16),
+      warning: Color(0xFFFACC15),
+      error: Color(0xFFDC2626),
+      textPrimary: Color(0xFFFFF7ED),
+      textMuted: Color(0xFFFBBF24),
+      fontFamily: 'AbrilFatface',
+      pattern: ChapterPattern.honeycomb,
+      shape: ChapterShape.sharpCorners,
+      cardElevation: 12,
+      borderRadius: 14,
+      gridPattern: 'amber',
+      trackAsset: 'assets/audio/track15.mp3',
+    ),
+    16: ChapterTheme(
+      name: 'Rose Quartz',
+      description: 'Soft rose crystal',
+      background: Color(0xFF2A0811),
+      backgroundAccent: Color(0xFF591623),
+      backgroundGradient: [Color(0xFF2A0811), Color(0xFF881337)],
+      cardBackground: Color(0xFF3F0E18),
+      cardBorder: Color(0xFFFB7185),
+      primary: Color(0xFFF43F5E),
+      accent: Color(0xFFFDA4AF),
+      success: Color(0xFF86EFAC),
+      warning: Color(0xFFFBCFE8),
+      error: Color(0xFFDC2626),
+      textPrimary: Color(0xFFFFF1F2),
+      textMuted: Color(0xFFFDA4AF),
+      fontFamily: 'GreatVibes',
+      pattern: ChapterPattern.bubbles,
+      shape: ChapterShape.roundedSquare,
+      cardElevation: 11,
+      borderRadius: 30,
+      gridPattern: 'rose',
+      trackAsset: 'assets/audio/track16.mp3',
+    ),
+    17: ChapterTheme(
+      name: 'Tech Matrix',
+      description: 'Digital green rain',
+      background: Color(0xFF00160B),
+      backgroundAccent: Color(0xFF004022),
+      backgroundGradient: [Color(0xFF00160B), Color(0xFF006400)],
+      cardBackground: Color(0xFF032817),
+      cardBorder: Color(0xFF22C55E),
+      primary: Color(0xFF16A34A),
+      accent: Color(0xFF4ADE80),
+      success: Color(0xFF86EFAC),
+      warning: Color(0xFFFACC15),
+      error: Color(0xFFF43F5E),
+      textPrimary: Color(0xFFBBF7D0),
+      textMuted: Color(0xFF4ADE80),
+      fontFamily: 'ShareTechMono',
+      pattern: ChapterPattern.grid,
+      shape: ChapterShape.sharpCorners,
+      cardElevation: 0,
+      borderRadius: 6,
+      gridPattern: 'matrix',
+      trackAsset: 'assets/audio/track17.mp3',
+    ),
+    18: ChapterTheme(
+      name: 'Skyline Peak',
+      description: 'Alpine summit blue',
+      background: Color(0xFF0A1C2E),
+      backgroundAccent: Color(0xFF193957),
+      backgroundGradient: [Color(0xFF0A1C2E), Color(0xFF2E5D8F)],
+      cardBackground: Color(0xFF14304C),
+      cardBorder: Color(0xFF38BDF8),
+      primary: Color(0xFF0EA5E9),
+      accent: Color(0xFF7DD3FC),
+      success: Color(0xFF6EE7B7),
+      warning: Color(0xFFFDE68A),
+      error: Color(0xFFF87171),
+      textPrimary: Color(0xFFEFF6FF),
+      textMuted: Color(0xFF7DD3FC),
+      fontFamily: 'Merriweather',
+      pattern: ChapterPattern.triangles,
+      shape: ChapterShape.hex,
+      cardElevation: 8,
+      borderRadius: 18,
+      gridPattern: 'peak',
+      trackAsset: 'assets/audio/track18.mp3',
+    ),
+    19: ChapterTheme(
+      name: 'Velvet Night',
+      description: 'Deep burgundy luxe',
+      background: Color(0xFF1A0616),
+      backgroundAccent: Color(0xFF44113A),
+      backgroundGradient: [Color(0xFF1A0616), Color(0xFF701A64)],
+      cardBackground: Color(0xFF2C0D25),
+      cardBorder: Color(0xFFE879F9),
+      primary: Color(0xFFD946EF),
+      accent: Color(0xFFF0ABFC),
+      success: Color(0xFF86EFAC),
+      warning: Color(0xFFFACC15),
+      error: Color(0xFFFB7185),
+      textPrimary: Color(0xFFFAF5FF),
+      textMuted: Color(0xFFF0ABFC),
+      fontFamily: 'PlayfairDisplay',
+      pattern: ChapterPattern.diagonal,
+      shape: ChapterShape.beveled,
+      cardElevation: 14,
+      borderRadius: 26,
+      gridPattern: 'velvet',
+      trackAsset: 'assets/audio/track19.mp3',
+    ),
+    20: ChapterTheme(
+      name: 'Rainbow Finale',
+      description: 'Grand master level',
+      background: Color(0xFF1A1033),
+      backgroundAccent: Color(0xFF3D1F66),
+      backgroundGradient: [
+        Color(0xFF7C3AED),
+        Color(0xFFDB2777),
+        Color(0xFFF59E0B),
+      ],
+      cardBackground: Color(0xFF2A184E),
+      cardBorder: Color(0xFFFFD166),
+      primary: Color(0xFFFB7185),
+      accent: Color(0xFFFACC15),
+      success: Color(0xFF34D399),
+      warning: Color(0xFF60A5FA),
+      error: Color(0xFFF43F5E),
+      textPrimary: Color(0xFFFEFCE8),
+      textMuted: Color(0xFFFDE68A),
+      fontFamily: 'Bungee',
+      pattern: ChapterPattern.zigzag,
+      shape: ChapterShape.smoothCard,
+      cardElevation: 18,
+      borderRadius: 24,
+      gridPattern: 'rainbow',
+      trackAsset: 'assets/audio/track20.mp3',
+    ),
+  };
+
+  static ChapterTheme forChapter(int chapter) {
+    if (chapter < 1) return _all[1]!;
+    if (chapter > totalThemes) return _all[totalThemes]!;
+    return _all[chapter] ?? _all[1]!;
+  }
+
+  static TextStyle resolveFont(String family, TextStyle base) {
+    try {
+      switch (family) {
+        case 'Orbitron':
+          return GoogleFonts.orbitron(textStyle: base);
+        case 'Inter':
+          return GoogleFonts.inter(textStyle: base);
+        case 'Lobster':
+          return GoogleFonts.lobster(textStyle: base);
+        case 'Quicksand':
+          return GoogleFonts.quicksand(textStyle: base);
+        case 'Montserrat':
+          return GoogleFonts.montserrat(textStyle: base);
+        case 'Righteous':
+          return GoogleFonts.righteous(textStyle: base);
+        case 'Pacifico':
+          return GoogleFonts.pacifico(textStyle: base);
+        case 'PlayfairDisplay':
+          return GoogleFonts.playfairDisplay(textStyle: base);
+        case 'RobotoSerif':
+          return GoogleFonts.robotoSerif(textStyle: base);
+        case 'Lora':
+          return GoogleFonts.lora(textStyle: base);
+        case 'DancingScript':
+          return GoogleFonts.dancingScript(textStyle: base);
+        case 'SpaceGrotesk':
+          return GoogleFonts.spaceGrotesk(textStyle: base);
+        case 'Poppins':
+          return GoogleFonts.poppins(textStyle: base);
+        case 'AbrilFatface':
+          return GoogleFonts.abrilFatface(textStyle: base);
+        case 'GreatVibes':
+          return GoogleFonts.greatVibes(textStyle: base);
+        case 'ShareTechMono':
+          return GoogleFonts.shareTechMono(textStyle: base);
+        case 'Merriweather':
+          return GoogleFonts.merriweather(textStyle: base);
+        case 'Bungee':
+          return GoogleFonts.bungee(textStyle: base);
+        default:
+          return GoogleFonts.inter(textStyle: base);
+      }
+    } catch (_) {
+      return base;
+    }
+  }
+}
