@@ -158,7 +158,17 @@ class _GameplayScreenState extends State<GameplayScreen> {
                 ),
                 const SizedBox(height: 24),
                 // Header Stats
-                Row(
+                Container(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.cardBorder.withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  child: Row(
                   children: [
                     Expanded(
                       child: Obx(() {
@@ -214,17 +224,24 @@ class _GameplayScreenState extends State<GameplayScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 48),
-
+                ),
                 // The Grid
                 Expanded(
                   child: GridBoardWidget(controller: controller, theme: theme),
                 ),
 
-                const Spacer(),
-
                 // Bottom tools
-                Row(
+                Container(
+                  padding: const EdgeInsets.only(top: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: theme.cardBorder.withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildToolButton(
@@ -266,6 +283,7 @@ class _GameplayScreenState extends State<GameplayScreen> {
                       () => controller.undo(),
                     ),
                   ],
+                ),
                 ),
               ],
             ),

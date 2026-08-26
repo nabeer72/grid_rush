@@ -3,6 +3,7 @@ import 'dart:math' show Random;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../app/routes.dart';
 import '../../../data/coin_repository.dart';
 import '../../../data/level_repository.dart';
 import '../../../data/progress_repository.dart';
@@ -420,7 +421,8 @@ class GameplayController extends GetxController {
           if (_pointHitsAnyObstacle(pos, _boardSize)) continue;
           bool nearObstacle = false;
           for (final o in currentObstacles) {
-            final r = _obstacleRect(o, _boardSize).inflate(6);
+            // Inflate obstacle rect to keep dots at a safe distance from them
+            final r = _obstacleRect(o, _boardSize).inflate(_hitRadius + 12);
             if (r.contains(pos)) {
               nearObstacle = true;
               break;
@@ -447,8 +449,10 @@ class GameplayController extends GetxController {
   }
 
   bool _isFarEnough(Offset pos, List<Offset> existing) {
+    // Increase separation factor since we now have more screen area
+    final requiredDistance = _minDotSeparation * 1.8;
     for (final other in existing) {
-      if ((pos - other).distance < _minDotSeparation) return false;
+      if ((pos - other).distance < requiredDistance) return false;
     }
     return true;
   }
@@ -522,9 +526,38 @@ class GameplayController extends GetxController {
     isGameOver.value = true;
     _timer?.cancel();
     unawaited(_settings.feedbackGameOver());
-    Future.delayed(const Duration(milliseconds: 800), () {
-      reset();
-      isGameOver.value = false;
+    Future.delayed(const Duration(milliseconds: 500), () {
+      Get.defaultDialog(
+        title: 'Game Over',
+        titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent),
+        middleText: 'You ran out of moves or time!',
+        barrierDismissible: false,
+        backgroundColor: const Color(0xFF1A1A2E),
+        titlePadding: const EdgeInsets.only(top: 20),
+        contentPadding: const EdgeInsets.all(20),
+        middleTextStyle: const TextStyle(color: Colors.white70),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+              Get.offAllNamed(AppRoutes.home);
+            },
+            child: const Text('Back to Home', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.pinkAccent,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Get.back();
+              reset();
+              isGameOver.value = false;
+            },
+            child: const Text('Retry'),
+          ),
+        ],
+      );
     });
   }
 

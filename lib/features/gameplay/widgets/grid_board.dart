@@ -17,9 +17,10 @@ class GridBoardWidget extends StatelessWidget {
     'yellow': Colors.yellow,
     'orange': Colors.orange,
     'purple': Colors.purple,
-    'cyan': Colors.cyan,
     'pink': Colors.pink,
+    'white': Colors.white,
     'brown': Colors.brown,
+    'cyan': Colors.cyan,
     'teal': Colors.teal,
     'lime': Colors.lime,
     'indigo': Colors.indigo,
@@ -217,16 +218,6 @@ class FreeDrawPainter extends CustomPainter {
     final usable = args.$2;
     final gridSize = gridSizeVal.toDouble();
 
-    bool _isFarEnough(Offset pos, List<Offset> existing) {
-      // Increase separation between free dots for clearer view
-      const double separationFactor = 1.5;
-      for (final other in existing) {
-        const _minDotSeparation = 20.0;
-        if ((pos - other).distance < _minDotSeparation * separationFactor) return false;
-      }
-      return true;
-    }
-
     final cellSize = usable / gridSize;
 
     for (final o in obstacles) {
@@ -241,47 +232,104 @@ class FreeDrawPainter extends CustomPainter {
             pattern: false,
           );
 
-      final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(6));
-      final fillPaint = Paint()..color = style.fill;
-      canvas.drawRRect(rrect, fillPaint);
-
-      final borderPaint = Paint()
-        ..color = style.border
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2;
-      canvas.drawRRect(rrect, borderPaint);
-
-      if (style.pattern) {
-        final lineColor = (style.accent ?? style.border).withOpacity(0.55);
-        final linePaint = Paint()
-          ..color = lineColor
-          ..strokeWidth = 1.2
-          ..style = PaintingStyle.stroke;
-        final step = cellSize / 3;
-        for (var i = 1; i < 3; i++) {
-          final offset = step * i;
-          canvas.drawLine(
-            Offset(left + offset, top + 2),
-            Offset(left + offset, top + cellSize - 2),
-            linePaint,
-          );
-          canvas.drawLine(
-            Offset(left + 2, top + offset),
-            Offset(left + cellSize - 2, top + offset),
-            linePaint,
-          );
-        }
-      } else {
-        final inner = rect.deflate(5);
-        final accentC = (style.accent ?? style.border).withOpacity(0.28);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(inner, const Radius.circular(4)),
-          Paint()
-            ..style = PaintingStyle.fill
-            ..color = accentC,
-        );
+      switch (o.type) {
+        case 'wall':
+          _drawWall(canvas, rect, style);
+          break;
+        case 'rock':
+          _drawRock(canvas, rect, style);
+          break;
+        case 'void':
+          _drawVoid(canvas, rect, style);
+          break;
+        case 'block':
+        default:
+          _drawBlock(canvas, rect, style);
+          break;
       }
     }
+  }
+
+  void _drawWall(Canvas canvas, Rect rect, _ObstacleStyle style) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(4)),
+      Paint()..color = style.fill,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(4)),
+      Paint()..color = style.border..style = PaintingStyle.stroke..strokeWidth = 2,
+    );
+    final mortar = Paint()..color = style.accent ?? Colors.black54..style = PaintingStyle.stroke..strokeWidth = 1.5;
+    final rowCount = 4;
+    final rowHeight = rect.height / rowCount;
+    for (var i = 1; i < rowCount; i++) {
+      final y = rect.top + i * rowHeight;
+      canvas.drawLine(Offset(rect.left, y), Offset(rect.right, y), mortar);
+      final brickWidth = rect.width / 2;
+      final offset = (i % 2 == 0) ? 0.0 : brickWidth / 2;
+      for (var j = 0; j <= 2; j++) {
+        final x = rect.left + offset + j * brickWidth;
+        if (x > rect.left && x < rect.right) {
+          canvas.drawLine(Offset(x, y - rowHeight), Offset(x, y), mortar);
+        }
+      }
+    }
+  }
+
+  void _drawRock(Canvas canvas, Rect rect, _ObstacleStyle style) {
+    final path = Path();
+    final w = rect.width;
+    final h = rect.height;
+    final l = rect.left;
+    final t = rect.top;
+    
+    // Create a jagged rock shape
+    path.moveTo(l + w * 0.2, t + h * 0.1);
+    path.lineTo(l + w * 0.7, t + h * 0.05);
+    path.lineTo(l + w * 0.95, t + h * 0.4);
+    path.lineTo(l + w * 0.8, t + h * 0.85);
+    path.lineTo(l + w * 0.3, t + h * 0.95);
+    path.lineTo(l + w * 0.05, t + h * 0.6);
+    path.close();
+
+    canvas.drawPath(path, Paint()..color = style.fill);
+    canvas.drawPath(path, Paint()..color = style.border..style = PaintingStyle.stroke..strokeWidth = 2);
+    
+    // Rock highlight/texture
+    final highlight = Path();
+    highlight.moveTo(l + w * 0.25, t + h * 0.2);
+    highlight.lineTo(l + w * 0.6, t + h * 0.15);
+    highlight.lineTo(l + w * 0.5, t + h * 0.4);
+    canvas.drawPath(highlight, Paint()..color = style.accent?.withOpacity(0.5) ?? Colors.white30..style = PaintingStyle.stroke..strokeWidth = 1.5);
+  }
+
+  void _drawVoid(Canvas canvas, Rect rect, _ObstacleStyle style) {
+    final center = rect.center;
+    final radius = rect.width / 2.2;
+    
+    // Deepest part
+    canvas.drawCircle(center, radius, Paint()..color = style.border);
+    // Mid depth
+    canvas.drawCircle(center, radius * 0.75, Paint()..color = style.fill);
+    // Inner depth (almost black)
+    canvas.drawCircle(center, radius * 0.4, Paint()..color = Colors.black87);
+    
+    // Glowing edge
+    canvas.drawCircle(center, radius, Paint()..color = style.accent ?? Colors.purple..style = PaintingStyle.stroke..strokeWidth = 1.5);
+  }
+
+  void _drawBlock(Canvas canvas, Rect rect, _ObstacleStyle style) {
+    // Metal/Wooden crate look
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(2));
+    canvas.drawRRect(rrect, Paint()..color = style.fill);
+    canvas.drawRRect(rrect, Paint()..color = style.border..style = PaintingStyle.stroke..strokeWidth = 2);
+    
+    final inner = rect.deflate(4);
+    canvas.drawRect(inner, Paint()..color = style.border..style = PaintingStyle.stroke..strokeWidth = 1.5);
+    
+    final lines = Paint()..color = style.accent ?? style.border..style = PaintingStyle.stroke..strokeWidth = 1.5;
+    canvas.drawLine(inner.topLeft, inner.bottomRight, lines);
+    canvas.drawLine(inner.topRight, inner.bottomLeft, lines);
   }
 
   (double, double) _paddingAndUsable(Size size, dynamic level) {
