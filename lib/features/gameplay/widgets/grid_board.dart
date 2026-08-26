@@ -9,24 +9,25 @@ class GridBoardWidget extends StatelessWidget {
 
   const GridBoardWidget({super.key, required this.controller, this.theme});
 
+  // Use more visually distinct colors for free dots
   static const Map<String, Color> colorMap = {
-    'red': Colors.redAccent,
-    'blue': Colors.blueAccent,
-    'green': Colors.greenAccent,
-    'yellow': Colors.yellowAccent,
-    'orange': Colors.orangeAccent,
-    'purple': Colors.purpleAccent,
-    'cyan': Colors.cyanAccent,
-    'pink': Colors.pinkAccent,
+    'red': Colors.red,
+    'blue': Colors.blue,
+    'green': Colors.green,
+    'yellow': Colors.yellow,
+    'orange': Colors.orange,
+    'purple': Colors.purple,
+    'cyan': Colors.cyan,
+    'pink': Colors.pink,
     'brown': Colors.brown,
-    'teal': Colors.tealAccent,
-    'lime': Colors.limeAccent,
-    'indigo': Colors.indigoAccent,
-    'amber': Colors.amberAccent,
-    'deepOrange': Colors.deepOrangeAccent,
-    'lightBlue': Colors.lightBlueAccent,
-    'lightGreen': Colors.lightGreenAccent,
-    'deepPurple': Colors.deepPurpleAccent,
+    'teal': Colors.teal,
+    'lime': Colors.lime,
+    'indigo': Colors.indigo,
+    'amber': Colors.amber,
+    'deepOrange': Colors.deepOrange,
+    'lightBlue': Colors.lightBlue,
+    'lightGreen': Colors.lightGreen,
+    'deepPurple': Colors.deepPurple,
     'amberDeep': Color(0xFFFF8F00),
     'rose': Color(0xFFE91E63),
     'sky': Color(0xFF4FC3F7),
@@ -84,35 +85,33 @@ class GridBoardWidget extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
     final obstacleStyles = _buildObstacleStyles();
-    return AspectRatio(
-      aspectRatio: 1.0,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (!controller.isInitialized || controller.gameState == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (!controller.isInitialized || controller.gameState == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          final boardSize = constraints.maxWidth;
-          controller.setBoardSize(boardSize);
+        final boardWidth = constraints.maxWidth;
+        final boardHeight = constraints.maxHeight;
+        controller.setScreenSize(Size(boardWidth, boardHeight));
 
-          return GestureDetector(
-            onPanStart: (details) =>
-                controller.startFreePath(details.localPosition),
-            onPanUpdate: (details) =>
-                controller.extendFreePath(details.localPosition),
-            onPanEnd: (_) => controller.endFreePath(),
-            child: CustomPaint(
-              size: Size(boardSize, boardSize),
-              painter: FreeDrawPainter(
-                controller: controller,
-                colorMap: colorMap,
-                obstacleStyles: obstacleStyles,
-                theme: theme,
-              ),
+        return GestureDetector(
+          onPanStart: (details) =>
+              controller.startFreePath(details.localPosition),
+          onPanUpdate: (details) =>
+              controller.extendFreePath(details.localPosition),
+          onPanEnd: (_) => controller.endFreePath(),
+          child: CustomPaint(
+            size: Size(boardWidth, boardHeight),
+            painter: FreeDrawPainter(
+              controller: controller,
+              colorMap: colorMap,
+              obstacleStyles: obstacleStyles,
+              theme: theme,
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -184,38 +183,13 @@ class FreeDrawPainter extends CustomPainter {
     }
 
     final dotPaint = Paint()..style = PaintingStyle.fill;
-    final dotBorder = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = Colors.white24;
 
     controller.freeDotPairs.forEach((colorStr, dots) {
       dotPaint.color = colorMap[colorStr] ?? Colors.white70;
       for (final offset in dots) {
         canvas.drawCircle(offset, dotRadius, dotPaint);
-        canvas.drawCircle(offset, dotRadius, dotBorder);
       }
     });
-    
-    final hColor = controller.hintColor.value;
-    if (hColor != null && controller.freeDotPairs.containsKey(hColor)) {
-      final dots = controller.freeDotPairs[hColor]!;
-      final hPaint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5
-        ..color = (colorMap[hColor] ?? Colors.white).withOpacity(0.6)
-        ..strokeCap = StrokeCap.round;
-      
-      // Draw dashed line or glowing stroke between the pair
-      canvas.drawLine(dots[0], dots[1], hPaint);
-    }
-
-    if (controller.isGameOver.value) {
-      canvas.drawRect(
-        Offset.zero & size,
-        Paint()..color = Colors.red.withOpacity(0.15),
-      );
-    }
   }
 
   void _drawBoardInnerBorder(
@@ -242,6 +216,17 @@ class FreeDrawPainter extends CustomPainter {
     final padding = args.$1;
     final usable = args.$2;
     final gridSize = gridSizeVal.toDouble();
+
+    bool _isFarEnough(Offset pos, List<Offset> existing) {
+      // Increase separation between free dots for clearer view
+      const double separationFactor = 1.5;
+      for (final other in existing) {
+        const _minDotSeparation = 20.0;
+        if ((pos - other).distance < _minDotSeparation * separationFactor) return false;
+      }
+      return true;
+    }
+
     final cellSize = usable / gridSize;
 
     for (final o in obstacles) {

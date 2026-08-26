@@ -21,9 +21,8 @@ class GameplayController extends GetxController {
   var isTimeUp = false.obs;
   var attemptsThisSession = 0.obs;
   var freeRearrangesLeft = 5.obs;
-
-  var freeHintsLeft = 0.obs;
-  var hintColor = Rx<String?>(null);
+  // Flag to track whether the user is actively dragging a free path
+  bool _isDragging = false;
 
   List<Offset> freePath = [];
   Map<String, List<Offset>> freeDotPairs = {};
@@ -33,6 +32,7 @@ class GameplayController extends GetxController {
   var isGameOver = false.obs;
 
   double _boardSize = 0;
+  Size _screenArea = Size.zero;
   Timer? _timer;
   bool _levelStartedRecorded = false;
 
@@ -75,10 +75,7 @@ class GameplayController extends GetxController {
     isTimeUp.value = false;
     _activeFreeColor = null;
     _activeStartDotIndex = null;
-    final chapter = level.chapter;
-    freeRearrangesLeft.value = ProgressRepository.freeRearrangesLeft(chapter);
-    freeHintsLeft.value = ProgressRepository.freeHintsLeft(chapter);
-    hintColor.value = null;
+    freeRearrangesLeft.value = 5;
     freePath.clear();
     freeDotPairs.clear();
     completedFreePaths.clear();
@@ -94,8 +91,8 @@ class GameplayController extends GetxController {
     } else {
       timeRemaining.value = 0;
     }
-    if (_boardSize > 0) {
-      _generateFreeDots(_boardSize);
+    if (_screenArea.width > 0) {
+      _generateFreeDots();
     }
     update();
   }
@@ -122,10 +119,11 @@ class GameplayController extends GetxController {
     super.onClose();
   }
 
-  void setBoardSize(double size) {
-    if (size <= 0 || size == _boardSize) return;
-    _boardSize = size;
-    _generateFreeDots(size);
+  void setScreenSize(Size size) {
+    if (size.width <= 0 || size.height <= 0 || size == _screenArea) return;
+    _screenArea = size;
+    _boardSize = size.width; // grid size based on width
+    _generateFreeDots();
     update();
   }
 
@@ -241,6 +239,8 @@ class GameplayController extends GetxController {
     freePath = [];
     _activeFreeColor = null;
     _activeStartDotIndex = null;
+    // User has begun a drag operation
+    _isDragging = true;
 
     final found = _findDotOnBorder(p);
     if (found.$1 != null && found.$2 != null) {
@@ -252,12 +252,12 @@ class GameplayController extends GetxController {
     update();
   }
 
-  Offset _clampInsidePlayArea(Offset p, double boardSize) {
+  Offset _clampInsidePlayArea(Offset p) {
     final padding = _boardPadding + _hitRadius * 0.5;
     final minX = padding;
-    final maxX = boardSize - padding;
+    final maxX = _screenArea.width - padding;
     final minY = padding;
-    final maxY = boardSize - padding;
+    final maxY = _screenArea.height - padding;
     final x = p.dx.clamp(minX, maxX);
     final y = p.dy.clamp(minY, maxY);
     return Offset(x.toDouble(), y.toDouble());
@@ -265,12 +265,12 @@ class GameplayController extends GetxController {
 
   static const double _visualEdgeTolerance = 2.5;
 
-  bool _lineTouchesBoundary(Offset a, Offset b, double boardSize) {
+  bool _lineTouchesBoundary(Offset a, Offset b) {
     const edgeTol = _visualEdgeTolerance;
     final left = 0.0;
     final top = 0.0;
-    final right = boardSize;
-    final bottom = boardSize;
+    final right = _screenArea.width;
+    final bottom = _screenArea.height;
 
     bool nearBoundary(Offset p) {
       return (p.dx < left - edgeTol) ||
@@ -315,6 +315,8 @@ class GameplayController extends GetxController {
   }
 
   void extendFreePath(Offset p) {
+    // Only process extensions while the user is actively dragging
+    if (!_isDragging) return;
     if (freePath.isEmpty || _activeFreeColor == null) return;
     if ((freePath.last - p).distance < 2) return;
 
@@ -328,7 +330,7 @@ class GameplayController extends GetxController {
       return;
     }
 
-    if (_lineTouchesBoundary(last, p, _boardSize)) {
+    if (_lineTouchesBoundary(last, p)) {
       return;
     }
     if (_lineCrossesExistingPaths(last, p, _activeFreeColor)) {
@@ -370,6 +372,8 @@ class GameplayController extends GetxController {
   }
 
   void endFreePath() {
+    // End of user drag; clear temporary state
+    _isDragging = false;
     if (_activeFreeColor != null) {
       freePath.clear();
       _activeFreeColor = null;
@@ -379,21 +383,24 @@ class GameplayController extends GetxController {
   }
 
   void resetFreePath() {
+    // Resetting path also means the user is no longer dragging
+    _isDragging = false;
     freePath.clear();
     _activeFreeColor = null;
     _activeStartDotIndex = null;
     update();
   }
 
-  void _generateFreeDots(double boardSize) {
+  void _generateFreeDots() {
     freeDotPairs.clear();
     completedFreePaths.clear();
     if (gameState == null) return;
 
     final rand = Random();
     final padding = _boardPadding;
-    final usable = boardSize - padding * 2;
-    if (usable <= 0) return;
+    final usableX = _screenArea.width - padding * 2;
+    final usableY = _screenArea.height - padding * 2;
+    if (usableX <= 0 || usableY <= 0) return;
 
     final placedDots = <Offset>[];
 
@@ -403,14 +410,17 @@ class GameplayController extends GetxController {
         Offset? candidate;
         for (var attempt = 0; attempt < 250; attempt++) {
           final pos = Offset(
-            padding + rand.nextDouble() * usable,
-            padding + rand.nextDouble() * usable,
+            padding + rand.nextDouble() * usableX,
+            padding + rand.nextDouble() * usableY,
           );
+          // Ensure dot does not touch board edges (respect hit radius)
+          if (pos.dx < padding + _hitRadius || pos.dx > _screenArea.width - padding - _hitRadius) continue;
+          if (pos.dy < padding + _hitRadius || pos.dy > _screenArea.height - padding - _hitRadius) continue;
           if (!_isFarEnough(pos, [...placedDots, ...dots])) continue;
-          if (_pointHitsAnyObstacle(pos, boardSize)) continue;
+          if (_pointHitsAnyObstacle(pos, _boardSize)) continue;
           bool nearObstacle = false;
           for (final o in currentObstacles) {
-            final r = _obstacleRect(o, boardSize).inflate(6);
+            final r = _obstacleRect(o, _boardSize).inflate(6);
             if (r.contains(pos)) {
               nearObstacle = true;
               break;
@@ -421,9 +431,14 @@ class GameplayController extends GetxController {
           break;
         }
         candidate ??= Offset(
-          padding + rand.nextDouble() * usable,
-          padding + rand.nextDouble() * usable,
+          padding + rand.nextDouble() * usableX,
+          padding + rand.nextDouble() * usableY,
         );
+        // Ensure fallback also respects edge margin
+        if (candidate.dx < padding + _hitRadius) candidate = Offset(padding + _hitRadius, candidate.dy);
+        if (candidate.dx > _screenArea.width - padding - _hitRadius) candidate = Offset(_screenArea.width - padding - _hitRadius, candidate.dy);
+        if (candidate.dy < padding + _hitRadius) candidate = Offset(candidate.dx, padding + _hitRadius);
+        if (candidate.dy > _screenArea.height - padding - _hitRadius) candidate = Offset(candidate.dx, _screenArea.height - padding - _hitRadius);
         dots.add(candidate);
       }
       placedDots.addAll(dots);
@@ -507,78 +522,30 @@ class GameplayController extends GetxController {
     isGameOver.value = true;
     _timer?.cancel();
     unawaited(_settings.feedbackGameOver());
-    // Removed automatic reset so the user can manually undo or rearrange
+    Future.delayed(const Duration(milliseconds: 800), () {
+      reset();
+      isGameOver.value = false;
+    });
   }
 
   void undo() {
     resetFreePath();
-    if (isGameOver.value) {
-      isGameOver.value = false;
-      if (gameState != null && gameState!.currentLevel.timeLimit > 0 && !isTimeUp.value) {
-        if (_timer == null || !_timer!.isActive) _startTimer();
-      }
-    }
-  }
-
-  Future<void> useHint() async {
-    if (gameState == null) return;
-    if (isGameOver.value || isCompleted.value) return;
-    final chapter = gameState!.currentLevel.chapter;
-    final cost = 20;
-
-    if (freeHintsLeft.value > 0) {
-      ProgressRepository.useFreeHint(chapter);
-      freeHintsLeft.value = ProgressRepository.freeHintsLeft(chapter);
-    } else {
-      if (_coins.canAfford(cost)) {
-        final ok = await _coins.spendCoins(cost);
-        if (!ok) return;
-      } else {
-        Get.snackbar(
-          'Not enough coins',
-          'You need $cost coins for a hint.',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Get.theme.colorScheme.error,
-          colorText: Get.theme.colorScheme.onError,
-        );
-        return;
-      }
-    }
-    
-    unawaited(_settings.selectionClick());
-    
-    for (final color in gameState!.currentLevel.colors) {
-      if (!completedFreePaths.containsKey(color)) {
-        hintColor.value = color;
-        Future.delayed(const Duration(seconds: 2), () {
-          if (hintColor.value == color) hintColor.value = null;
-        });
-        break;
-      }
-    }
   }
 
   Future<void> manualRearrange() async {
-    if (gameState == null) return;
-    final chapter = gameState!.currentLevel.chapter;
-    final cost = 30;
-
     if (freeRearrangesLeft.value > 0) {
-      ProgressRepository.useFreeRearrange(chapter);
-      freeRearrangesLeft.value = ProgressRepository.freeRearrangesLeft(chapter);
+      freeRearrangesLeft.value--;
       reset();
-      isGameOver.value = false;
     } else {
-      if (_coins.canAfford(cost)) {
-        final ok = await _coins.spendCoins(cost);
+      if (_coins.canAfford(30)) {
+        final ok = await _coins.spendCoins(30);
         if (ok) {
           reset();
-          isGameOver.value = false;
         }
       } else {
         Get.snackbar(
           'Not enough coins',
-          'You need $cost coins to rearrange.',
+          'You need 30 coins to rearrange.',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Get.theme.colorScheme.error,
           colorText: Get.theme.colorScheme.onError,
@@ -607,8 +574,8 @@ class GameplayController extends GetxController {
     }
     resetFreePath();
     completedFreePaths.clear();
-    if (_boardSize > 0) {
-      _generateFreeDots(_boardSize);
+    if (_screenArea.width > 0) {
+      _generateFreeDots();
     }
     update();
   }

@@ -13,8 +13,6 @@ class ProgressRepository {
   static SharedPreferences? _prefs;
   static final Map<int, int> _attemptsCache = {};
   static final Map<int, int> _bestStarsCache = {};
-  static final Map<int, int> _hintsUsedCache = {};
-  static final Map<int, int> _rearrangesUsedCache = {};
   static final Set<int> _completedCache = {};
   static bool _initialized = false;
 
@@ -30,14 +28,10 @@ class ProgressRepository {
     _prefs = await SharedPreferences.getInstance();
     final attemptsJson = _prefs?.getString(_kAttemptsKey);
     final starsJson = _prefs?.getString(_kStarsKey);
-    final hintsJson = _prefs?.getString('$_kPrefix/hints');
-    final rearrangesJson = _prefs?.getString('$_kPrefix/rearranges');
     final completedJson = _prefs?.getString(_kCompletedKey);
 
     _attemptsCache.clear();
     _bestStarsCache.clear();
-    _hintsUsedCache.clear();
-    _rearrangesUsedCache.clear();
     _completedCache.clear();
 
     if (attemptsJson != null && attemptsJson.isNotEmpty) {
@@ -52,20 +46,6 @@ class ProgressRepository {
       m.forEach((k, v) {
         final id = int.tryParse(k);
         if (id != null && v is int) _bestStarsCache[id] = v;
-      });
-    }
-    if (hintsJson != null && hintsJson.isNotEmpty) {
-      final Map<String, dynamic> m = jsonDecode(hintsJson);
-      m.forEach((k, v) {
-        final id = int.tryParse(k);
-        if (id != null && v is int) _hintsUsedCache[id] = v;
-      });
-    }
-    if (rearrangesJson != null && rearrangesJson.isNotEmpty) {
-      final Map<String, dynamic> m = jsonDecode(rearrangesJson);
-      m.forEach((k, v) {
-        final id = int.tryParse(k);
-        if (id != null && v is int) _rearrangesUsedCache[id] = v;
       });
     }
     if (completedJson != null && completedJson.isNotEmpty) {
@@ -87,14 +67,8 @@ class ProgressRepository {
     _attemptsCache.forEach((k, v) => a['$k'] = v);
     final s = <String, int>{};
     _bestStarsCache.forEach((k, v) => s['$k'] = v);
-    final h = <String, int>{};
-    _hintsUsedCache.forEach((k, v) => h['$k'] = v);
-    final r = <String, int>{};
-    _rearrangesUsedCache.forEach((k, v) => r['$k'] = v);
     await prefs.setString(_kAttemptsKey, jsonEncode(a));
     await prefs.setString(_kStarsKey, jsonEncode(s));
-    await prefs.setString('$_kPrefix/hints', jsonEncode(h));
-    await prefs.setString('$_kPrefix/rearranges', jsonEncode(r));
     await prefs.setString(
       _kCompletedKey,
       jsonEncode(_completedCache.toList()..sort()),
@@ -126,24 +100,6 @@ class ProgressRepository {
 
   static void markCompleted(int levelId) {
     _completedCache.add(levelId);
-    _persist();
-  }
-
-  static int freeHintsLeft(int chapter) {
-    return (5 - (_hintsUsedCache[chapter] ?? 0)).clamp(0, 5);
-  }
-
-  static void useFreeHint(int chapter) {
-    _hintsUsedCache[chapter] = (_hintsUsedCache[chapter] ?? 0) + 1;
-    _persist();
-  }
-
-  static int freeRearrangesLeft(int chapter) {
-    return (5 - (_rearrangesUsedCache[chapter] ?? 0)).clamp(0, 5);
-  }
-
-  static void useFreeRearrange(int chapter) {
-    _rearrangesUsedCache[chapter] = (_rearrangesUsedCache[chapter] ?? 0) + 1;
     _persist();
   }
 
@@ -184,8 +140,6 @@ class ProgressRepository {
     _attemptsCache.clear();
     _bestStarsCache.clear();
     _completedCache.clear();
-    _hintsUsedCache.clear();
-    _rearrangesUsedCache.clear();
     await _persist();
   }
 }

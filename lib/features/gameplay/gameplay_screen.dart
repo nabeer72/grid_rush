@@ -217,21 +217,7 @@ class _GameplayScreenState extends State<GameplayScreen> {
                 const SizedBox(height: 48),
 
                 // The Grid
-                Container(
-                  decoration: BoxDecoration(
-                    color: theme.cardBackground,
-                    borderRadius: borderRadius,
-                    border: Border.all(color: theme.cardBorder, width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.cardBorder.withOpacity(0.3),
-                        blurRadius: theme.cardElevation,
-                        spreadRadius: 0.5,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(16),
+                Expanded(
                   child: GridBoardWidget(controller: controller, theme: theme),
                 ),
 
@@ -241,18 +227,12 @@ class _GameplayScreenState extends State<GameplayScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Obx(() {
-                      final affordable = controller.freeHintsLeft.value > 0 || controller.canBuyExtraTime;
-                      return _buildToolButton(
-                        Icons.lightbulb,
-                        affordable ? theme.warning : theme.textMuted,
-                        theme,
-                        () => controller.useHint(),
-                        priceLabel: controller.freeHintsLeft.value > 0
-                            ? '${controller.freeHintsLeft.value} Free'
-                            : '20 Coins',
-                      );
-                    }),
+                    _buildToolButton(
+                      Icons.lightbulb,
+                      theme.warning,
+                      theme,
+                      () {},
+                    ),
                     if (level.timeLimit > 0)
                       Obx(() {
                         final affordable = controller.canBuyExtraTime;
