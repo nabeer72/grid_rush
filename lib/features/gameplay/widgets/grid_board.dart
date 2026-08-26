@@ -196,11 +196,24 @@ class FreeDrawPainter extends CustomPainter {
         canvas.drawCircle(offset, dotRadius, dotBorder);
       }
     });
+    
+    final hColor = controller.hintColor.value;
+    if (hColor != null && controller.freeDotPairs.containsKey(hColor)) {
+      final dots = controller.freeDotPairs[hColor]!;
+      final hPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..color = (colorMap[hColor] ?? Colors.white).withOpacity(0.6)
+        ..strokeCap = StrokeCap.round;
+      
+      // Draw dashed line or glowing stroke between the pair
+      canvas.drawLine(dots[0], dots[1], hPaint);
+    }
 
     if (controller.isGameOver.value) {
       canvas.drawRect(
         Offset.zero & size,
-        Paint()..color = Colors.red.withValues(alpha: 0.15),
+        Paint()..color = Colors.red.withOpacity(0.15),
       );
     }
   }

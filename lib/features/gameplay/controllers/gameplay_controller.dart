@@ -22,6 +22,9 @@ class GameplayController extends GetxController {
   var attemptsThisSession = 0.obs;
   var freeRearrangesLeft = 5.obs;
 
+  var freeHintsLeft = 0.obs;
+  var hintColor = Rx<String?>(null);
+
   List<Offset> freePath = [];
   Map<String, List<Offset>> freeDotPairs = {};
   String? _activeFreeColor;
@@ -72,7 +75,10 @@ class GameplayController extends GetxController {
     isTimeUp.value = false;
     _activeFreeColor = null;
     _activeStartDotIndex = null;
-    freeRearrangesLeft.value = 5;
+    final chapter = level.chapter;
+    freeRearrangesLeft.value = ProgressRepository.freeRearrangesLeft(chapter);
+    freeHintsLeft.value = ProgressRepository.freeHintsLeft(chapter);
+    hintColor.value = null;
     freePath.clear();
     freeDotPairs.clear();
     completedFreePaths.clear();
@@ -501,30 +507,78 @@ class GameplayController extends GetxController {
     isGameOver.value = true;
     _timer?.cancel();
     unawaited(_settings.feedbackGameOver());
-    Future.delayed(const Duration(milliseconds: 800), () {
-      reset();
-      isGameOver.value = false;
-    });
+    // Removed automatic reset so the user can manually undo or rearrange
   }
 
   void undo() {
     resetFreePath();
+    if (isGameOver.value) {
+      isGameOver.value = false;
+      if (gameState != null && gameState!.currentLevel.timeLimit > 0 && !isTimeUp.value) {
+        if (_timer == null || !_timer!.isActive) _startTimer();
+      }
+    }
+  }
+
+  Future<void> useHint() async {
+    if (gameState == null) return;
+    if (isGameOver.value || isCompleted.value) return;
+    final chapter = gameState!.currentLevel.chapter;
+    final cost = 20;
+
+    if (freeHintsLeft.value > 0) {
+      ProgressRepository.useFreeHint(chapter);
+      freeHintsLeft.value = ProgressRepository.freeHintsLeft(chapter);
+    } else {
+      if (_coins.canAfford(cost)) {
+        final ok = await _coins.spendCoins(cost);
+        if (!ok) return;
+      } else {
+        Get.snackbar(
+          'Not enough coins',
+          'You need $cost coins for a hint.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Get.theme.colorScheme.error,
+          colorText: Get.theme.colorScheme.onError,
+        );
+        return;
+      }
+    }
+    
+    unawaited(_settings.selectionClick());
+    
+    for (final color in gameState!.currentLevel.colors) {
+      if (!completedFreePaths.containsKey(color)) {
+        hintColor.value = color;
+        Future.delayed(const Duration(seconds: 2), () {
+          if (hintColor.value == color) hintColor.value = null;
+        });
+        break;
+      }
+    }
   }
 
   Future<void> manualRearrange() async {
+    if (gameState == null) return;
+    final chapter = gameState!.currentLevel.chapter;
+    final cost = 30;
+
     if (freeRearrangesLeft.value > 0) {
-      freeRearrangesLeft.value--;
+      ProgressRepository.useFreeRearrange(chapter);
+      freeRearrangesLeft.value = ProgressRepository.freeRearrangesLeft(chapter);
       reset();
+      isGameOver.value = false;
     } else {
-      if (_coins.canAfford(30)) {
-        final ok = await _coins.spendCoins(30);
+      if (_coins.canAfford(cost)) {
+        final ok = await _coins.spendCoins(cost);
         if (ok) {
           reset();
+          isGameOver.value = false;
         }
       } else {
         Get.snackbar(
           'Not enough coins',
-          'You need 30 coins to rearrange.',
+          'You need $cost coins to rearrange.',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Get.theme.colorScheme.error,
           colorText: Get.theme.colorScheme.onError,

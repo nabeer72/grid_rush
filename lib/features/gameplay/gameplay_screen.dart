@@ -241,12 +241,18 @@ class _GameplayScreenState extends State<GameplayScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildToolButton(
-                      Icons.lightbulb,
-                      theme.warning,
-                      theme,
-                      () {},
-                    ),
+                    Obx(() {
+                      final affordable = controller.freeHintsLeft.value > 0 || controller.canBuyExtraTime;
+                      return _buildToolButton(
+                        Icons.lightbulb,
+                        affordable ? theme.warning : theme.textMuted,
+                        theme,
+                        () => controller.useHint(),
+                        priceLabel: controller.freeHintsLeft.value > 0
+                            ? '${controller.freeHintsLeft.value} Free'
+                            : '20 Coins',
+                      );
+                    }),
                     if (level.timeLimit > 0)
                       Obx(() {
                         final affordable = controller.canBuyExtraTime;
